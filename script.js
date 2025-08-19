@@ -45,6 +45,19 @@ class CascadingSpindrift {
         this.speedDecay = 0.97; // Each outer triangle rotates at 80% of inner triangle speed
         this.rotationSpeeds = []; // Array to store individual rotation speeds
         
+        // Performance monitoring
+        this.frameCount = 0;
+        this.lastTime = performance.now();
+        this.fps = 60;
+        this.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        
+        // Mobile optimizations
+        if (this.isMobile) {
+            this.numLayers = Math.min(this.numLayers, 12); // Reduce layers on mobile for better performance
+            this.baseRotationSpeed *= 2.0; // Increase speed on mobile to compensate for lower FPS
+            console.log('Mobile device detected - applying optimizations');
+        }
+        
         // Individual rotation states for each layer
         this.layerRotations = []; // Current rotation angle for each layer
         
@@ -334,6 +347,23 @@ class CascadingSpindrift {
         // Center the triangles
         this.centerX = this.canvas.width / 2;
         this.centerY = this.canvas.height / 2;
+        
+        // Mobile-specific canvas optimizations
+        if (this.isMobile) {
+            // Enable hardware acceleration hints
+            this.canvas.style.transform = 'translateZ(0)';
+            this.canvas.style.willChange = 'transform';
+            
+            // Reduce canvas resolution on mobile for better performance
+            const devicePixelRatio = window.devicePixelRatio || 1;
+            if (devicePixelRatio > 1) {
+                this.canvas.width = window.innerWidth * devicePixelRatio;
+                this.canvas.height = window.innerHeight * devicePixelRatio;
+                this.canvas.style.width = window.innerWidth + 'px';
+                this.canvas.style.height = window.innerHeight + 'px';
+                this.ctx.scale(devicePixelRatio, devicePixelRatio);
+            }
+        }
     }
     
     startAnimation() {
@@ -342,6 +372,23 @@ class CascadingSpindrift {
     
     animate() {
         if (!this.isAnimating) return;
+        
+        // Performance monitoring
+        this.frameCount++;
+        const currentTime = performance.now();
+        if (currentTime - this.lastTime >= 1000) { // Every second
+            this.fps = this.frameCount;
+            this.frameCount = 0;
+            this.lastTime = currentTime;
+            
+            // Log performance info to console
+            console.log(`FPS: ${this.fps}, Mobile: ${this.isMobile}, Layers: ${this.numLayers}`);
+            
+            // Update status with FPS info
+            if (this.statusElement) {
+                this.statusElement.textContent = `new tab - FPS: ${this.fps}`;
+            }
+        }
         
         // Handle smooth color transitions
         if (this.isTransitioning) {
