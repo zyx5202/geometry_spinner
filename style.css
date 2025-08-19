@@ -1,0 +1,269 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #1a1a1a;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #00ff00;
+}
+
+#spindriftCanvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+}
+
+#status {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    z-index: 1000;
+    border: 1px solid #333333;
+    color: #cccccc;
+    display: none; /* Hide the status display */
+}
+
+/* Menu Toggle Button */
+.menu-toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid #333333;
+    border-radius: 50%;
+    color: #00ff00;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 1001;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-toggle-btn:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+    border-color: #00ff00;
+    transform: scale(1.1);
+}
+
+/* Hidden class for menu */
+.hidden {
+    display: none !important;
+}
+
+/* Shape Selector Interface */
+#shapeSelector {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    border: 1px solid #333333;
+    z-index: 1000;
+    min-width: 280px;
+}
+
+.tab-header {
+    display: flex;
+    border-bottom: 1px solid #333333;
+}
+
+.tab-button {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #cccccc;
+    padding: 12px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-button.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border-bottom: 2px solid #cccccc;
+}
+
+.tab-content {
+    padding: 15px;
+}
+
+.shape-controls {
+    margin-bottom: 15px;
+}
+
+.speed-controls {
+    margin-bottom: 15px;
+}
+
+.decay-controls {
+    margin-bottom: 15px;
+}
+
+.color-controls {
+    margin-bottom: 15px;
+}
+
+.background-controls {
+    margin-bottom: 15px;
+}
+
+.random-color-controls {
+    margin-bottom: 15px;
+    padding: 15px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border: 1px solid #444444;
+}
+
+.random-mode-btn {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background: linear-gradient(45deg, #444444, #666666);
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.random-mode-btn:hover {
+    background: linear-gradient(45deg, #555555, #777777);
+    transform: translateY(-1px);
+}
+
+.random-mode-btn.active {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+}
+
+.random-settings {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.random-settings label {
+    font-size: 12px;
+    color: #cccccc;
+    white-space: nowrap;
+}
+
+.random-settings input[type="range"] {
+    flex: 1;
+    height: 6px;
+    background: #333333;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+}
+
+.random-settings input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #cccccc;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.random-settings input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #cccccc;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+#speedValue {
+    font-size: 12px;
+    color: #cccccc;
+    min-width: 20px;
+    text-align: center;
+}
+
+.shape-controls label,
+.speed-controls label,
+.decay-controls label,
+.color-controls label,
+.background-controls label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #cccccc;
+}
+
+.shape-controls input,
+.speed-controls input,
+.decay-controls input {
+    width: 120px;
+    padding: 8px;
+    background-color: #222222;
+    border: 1px solid #444444;
+    border-radius: 4px;
+    color: #cccccc;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.shape-controls input:focus,
+.speed-controls input:focus,
+.decay-controls input:focus {
+    border-color: #00ff00;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+    outline: none;
+}
+
+.color-controls input,
+.background-controls input {
+    width: 80px;
+    height: 40px;
+    padding: 0;
+    background: none;
+    border: 1px solid #444444;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.color-controls input:focus,
+.background-controls input:focus {
+    border-color: #00ff00;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+    outline: none;
+}
+
+
+
+.shape-info {
+    text-align: center;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    border: 1px solid #333333;
+}
+
+#currentShape {
+    font-size: 14px;
+    color: #cccccc;
+} 

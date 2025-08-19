@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "new tab",
+  "version": "1.0.0",
+  "description": "A lightweight and captivating new tab extension featuring cascading nested triangles with progressive rotation speeds",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [],
+  "icons": {
+    "16": "faec.png",
+    "48": "faec.png",
+    "128": "faec.png"
+  }
+} 
