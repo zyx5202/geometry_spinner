@@ -123,7 +123,7 @@ class CascadingSpindrift {
         
         baseSpeedInput.addEventListener('input', () => {
             const speed = parseFloat(baseSpeedInput.value);
-            if (speed >= 0.1 && speed <= 20) {
+            if (speed >= 0.1 && speed <= 2000) {
                 this.baseRotationSpeed = speed;
                 this.updateRotationSpeeds();
             }
@@ -131,7 +131,7 @@ class CascadingSpindrift {
         
         decayInput.addEventListener('input', () => {
             const decay = parseFloat(decayInput.value);
-            if (decay >= 0.1 && decay <= 1.0) {
+            if (decay >= 0.1 && decay <= 2000) {
                 this.speedDecay = decay;
                 this.updateRotationSpeeds();
             }
@@ -234,12 +234,12 @@ class CascadingSpindrift {
         const button = document.getElementById('randomColorMode');
         
         if (this.randomColorMode) {
-            button.textContent = '🎨 Random Color Mode: ON';
+            button.textContent = 'Random Color Mode: ON';
             button.classList.add('active');
             // Start smooth transition to first random colors
             this.startSmoothTransition();
         } else {
-            button.textContent = '🎨 Random Color Mode: OFF';
+            button.textContent = 'Random Color Mode: OFF';
             button.classList.remove('active');
             // Start smooth transition back to default colors
             this.startSmoothTransitionToDefaults();
