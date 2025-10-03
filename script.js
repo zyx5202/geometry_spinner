@@ -23,13 +23,13 @@ class CascadingSpindrift {
         this.randomColorMode = false;
         this.colorChangeSpeed = 5; // Frames between color changes
         this.colorChangeCounter = 0;
-        this.colorPalette = [
-            '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
-            '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43',
-            '#10ac84', '#ee5253', '#0abde3', '#ff6b6b', '#48dbfb',
-            '#1dd1a1', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3'
-        ];
-        this.currentColorIndex = 0;
+        
+        // RGB cycling system
+        this.rgbValues = [0, 255]; // Only 0 and 255 values
+        this.currentRgb = { r: 0, g: 0, b: 255 }; // Start with blue
+        this.rgbDirection = { r: 1, g: 1, b: -1 }; // Direction for each channel (1 = increasing, -1 = decreasing)
+        this.rgbStep = 255; // Step size for RGB changes
+        this.currentChannel = 0; // 0 = r, 1 = g, 2 = b
         
         // Smooth color transition properties
         this.transitionFrames = 60; // Number of frames for smooth transition
@@ -61,6 +61,10 @@ class CascadingSpindrift {
         // Individual rotation states for each layer
         this.layerRotations = []; // Current rotation angle for each layer
         
+        // Speed lock functionality
+        this.isSpeedLocked = false;
+        this.lockedRotationSpeeds = []; // Store speeds when locked
+        
         // Center point
         this.centerX = 0;
         this.centerY = 0;
@@ -72,6 +76,10 @@ class CascadingSpindrift {
     }
     
     initializeRotations() {
+        // Clear existing arrays
+        this.rotationSpeeds = [];
+        this.layerRotations = [];
+        
         // Initialize rotation speeds and angles for each layer
         // Innermost triangle (layer 0) has the fastest rotation
         for (let layer = 0; layer < this.numLayers; layer++) {
@@ -111,6 +119,12 @@ class CascadingSpindrift {
         const colorChangeSpeedSlider = document.getElementById('colorChangeSpeed');
         const speedValueSpan = document.getElementById('speedValue');
         
+        // Layer and size controls
+        const numLayersInput = document.getElementById('numLayersInput');
+        const layersValueSpan = document.getElementById('layersValue');
+        const baseSizeInput = document.getElementById('baseSizeInput');
+        const sizeValueSpan = document.getElementById('sizeValue');
+        
         // Tab button click handlers
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -136,15 +150,21 @@ class CascadingSpindrift {
         
         baseSpeedInput.addEventListener('input', () => {
             const speed = parseFloat(baseSpeedInput.value);
-            if (speed >= 0.1 && speed <= 2000) {
+            if (speed >= 0.1 && speed <= 20000) {
                 this.baseRotationSpeed = speed;
-                this.updateRotationSpeeds();
+                
+                if (this.isSpeedLocked) {
+                    // Update locked speeds with new base speed
+                    this.lockedRotationSpeeds = new Array(this.numLayers).fill(speed);
+                } else {
+                    this.updateRotationSpeeds();
+                }
             }
         });
         
         decayInput.addEventListener('input', () => {
             const decay = parseFloat(decayInput.value);
-            if (decay >= 0.1 && decay <= 2000) {
+            if (decay >= 0.1 && decay <= 20000) {
                 this.speedDecay = decay;
                 this.updateRotationSpeeds();
             }
@@ -168,6 +188,35 @@ class CascadingSpindrift {
         colorChangeSpeedSlider.addEventListener('input', () => {
             this.colorChangeSpeed = parseInt(colorChangeSpeedSlider.value);
             speedValueSpan.textContent = this.colorChangeSpeed;
+        });
+        
+        // Number of layers slider
+        numLayersInput.addEventListener('input', () => {
+            const layers = parseInt(numLayersInput.value);
+            if (layers >= 5 && layers <= 50) {
+                this.numLayers = layers;
+                layersValueSpan.textContent = layers;
+                
+                // If speed is locked, unlock it first to prevent duplication
+                if (this.isSpeedLocked) {
+                    this.isSpeedLocked = false;
+                    this.lockedRotationSpeeds = [];
+                    if (this.statusElement) {
+                        this.statusElement.textContent = 'Speed Lock: OFF - Press SPACE to lock speed';
+                    }
+                }
+                
+                this.initializeRotations();
+            }
+        });
+        
+        // Base size slider
+        baseSizeInput.addEventListener('input', () => {
+            const size = parseInt(baseSizeInput.value);
+            if (size >= 200 && size <= 2000) {
+                this.baseSize = size;
+                sizeValueSpan.textContent = size;
+            }
         });
         
         // Initialize shape display
@@ -242,6 +291,40 @@ class CascadingSpindrift {
         return this.rgbToHex(interpolated.r, interpolated.g, interpolated.b);
     }
     
+    // Update RGB color by cycling through combinations
+    updateRgbColor() {
+        const channels = ['r', 'g', 'b'];
+        let attempts = 0;
+        const maxAttempts = 10; // Prevent infinite loops
+        
+        do {
+            const currentChannelName = channels[this.currentChannel];
+            
+            // Move current channel in its direction
+            this.currentRgb[currentChannelName] += this.rgbDirection[currentChannelName] * this.rgbStep;
+            
+            // Clamp to valid values
+            this.currentRgb[currentChannelName] = Math.max(0, Math.min(255, this.currentRgb[currentChannelName]));
+            
+            // If we hit a boundary, switch to next channel
+            if (this.currentRgb[currentChannelName] === 0 || this.currentRgb[currentChannelName] === 255) {
+                // Reverse direction for next time
+                this.rgbDirection[currentChannelName] *= -1;
+                
+                // Move to next channel
+                this.currentChannel = (this.currentChannel + 1) % 3;
+            }
+            
+            attempts++;
+        } while (this.currentRgb.r === 0 && this.currentRgb.g === 0 && this.currentRgb.b === 0 && attempts < maxAttempts);
+        
+        // If we somehow still have black after max attempts, force a non-black color
+        if (this.currentRgb.r === 0 && this.currentRgb.g === 0 && this.currentRgb.b === 0) {
+            this.currentRgb.r = 255; // Force red
+        }
+    }
+    
+    
     toggleRandomColorMode() {
         this.randomColorMode = !this.randomColorMode;
         const button = document.getElementById('randomColorMode');
@@ -269,10 +352,12 @@ class CascadingSpindrift {
         this.startShapeColor = this.shapeColor;
         this.startBgColor = this.backgroundColor;
         
-        // Set target colors to next palette colors
-        this.targetShapeColor = this.colorPalette[this.currentColorIndex];
-        const bgColorIndex = (this.currentColorIndex + 10) % this.colorPalette.length;
-        this.targetBgColor = this.colorPalette[bgColorIndex];
+        // Generate next RGB color
+        this.updateRgbColor();
+        this.targetShapeColor = this.rgbToHex(this.currentRgb.r, this.currentRgb.g, this.currentRgb.b);
+        
+        // Keep background color unchanged
+        this.targetBgColor = this.backgroundColor;
     }
     
     startSmoothTransitionToDefaults() {
@@ -295,9 +380,6 @@ class CascadingSpindrift {
         
         // Start smooth transition to next colors
         this.startSmoothTransition();
-        
-        // Move to next color index for next transition
-        this.currentColorIndex = (this.currentColorIndex + 1) % this.colorPalette.length;
     }
     
     updateShape(shapeType) {
@@ -508,7 +590,9 @@ class CascadingSpindrift {
     updateRotations() {
         // Update rotation for each layer at different speeds
         for (let layer = 0; layer < this.numLayers; layer++) {
-            this.layerRotations[layer] += this.rotationSpeeds[layer];
+            // Use locked speeds if speed is locked, otherwise use current speeds
+            const speed = this.isSpeedLocked ? this.lockedRotationSpeeds[layer] : this.rotationSpeeds[layer];
+            this.layerRotations[layer] += speed;
             
             // Keep rotation angles manageable (optional)
             if (this.layerRotations[layer] > 360) {
@@ -545,6 +629,9 @@ class CascadingSpindrift {
     }
 
     reverseRotation() {
+        // Don't reverse if speed is locked
+        if (this.isSpeedLocked) return;
+        
         // Reverse all rotation speeds (make them negative)
         for (let layer = 0; layer < this.rotationSpeeds.length; layer++) {
             this.rotationSpeeds[layer] = -this.rotationSpeeds[layer];
@@ -552,6 +639,9 @@ class CascadingSpindrift {
     }
 
     updateRotationSpeeds() {
+        // Don't update speeds if they are locked
+        if (this.isSpeedLocked) return;
+        
         // Clear existing rotation speeds
         this.rotationSpeeds = [];
         
@@ -560,6 +650,26 @@ class CascadingSpindrift {
             // Calculate rotation speed: fastest for innermost, progressively slower for outer
             const speed = this.baseRotationSpeed * Math.pow(this.speedDecay, this.numLayers - 1 - layer);
             this.rotationSpeeds.push(speed);
+        }
+    }
+
+    toggleSpeedLock() {
+        if (this.isSpeedLocked) {
+            // Unlock: restore normal speed behavior
+            this.isSpeedLocked = false;
+            this.lockedRotationSpeeds = [];
+            this.updateRotationSpeeds();
+            if (this.statusElement) {
+                this.statusElement.textContent = 'Speed Lock: OFF - Press SPACE to lock speed';
+            }
+        } else {
+            // Lock: make all layers rotate at the same speed as the innermost layer
+            this.isSpeedLocked = true;
+            const innermostSpeed = this.rotationSpeeds[0]; // Innermost layer speed
+            this.lockedRotationSpeeds = new Array(this.numLayers).fill(innermostSpeed);
+            if (this.statusElement) {
+                this.statusElement.textContent = 'Speed Lock: ON - All layers at innermost speed';
+            }
         }
     }
 }
@@ -579,6 +689,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 spindrift.resumeAnimation();
             }
+        } else if (event.key === ' ') {
+            event.preventDefault(); // Prevent page scroll
+            spindrift.toggleSpeedLock();
         }
     });
 }); 

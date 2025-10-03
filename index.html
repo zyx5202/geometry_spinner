@@ -50,9 +50,21 @@
                 <button id="randomColorMode" class="random-mode-btn">Random Color Mode: OFF</button>
                 <div class="random-settings">
                     <label for="colorChangeSpeed">Change Speed:</label>
-                    <input type="range" id="colorChangeSpeed" min="0.1" max="10" value="5">
+                    <input type="range" id="colorChangeSpeed" min="1" max="200" value="5" step="1">
                     <span id="speedValue">5</span>
                 </div>
+            </div>
+            
+            <div class="layer-controls">
+                <label for="numLayersInput">Number of Layers:</label>
+                <input type="range" id="numLayersInput" min="5" max="50" value="20" step="1">
+                <span id="layersValue">20</span>
+            </div>
+            
+            <div class="size-controls">
+                <label for="baseSizeInput">Base Size:</label>
+                <input type="range" id="baseSizeInput" min="200" max="2000" value="1000" step="50">
+                <span id="sizeValue">1000</span>
             </div>
             
             <div class="shape-info">
